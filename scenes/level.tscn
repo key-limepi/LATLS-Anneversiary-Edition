@@ -1,0 +1,185 @@
+[gd_scene format=3 uid="uid://c3yam4b1y702d"]
+
+[ext_resource type="PackedScene" uid="uid://b2w8l5a0x6y3c" path="res://scenes/player.tscn" id="1_player"]
+[sub_resource type="RectangleShape2D" id="1_rect"]
+size = Vector2(4000, 40)
+
+[sub_resource type="RectangleShape2D" id="3_wall"]
+size = Vector2(24, 280)
+
+[sub_resource type="RectangleShape2D" id="2_small"]
+size = Vector2(220, 20)
+
+[node name="Level" type="Node2D" unique_id=459399879]
+
+[node name="Player" parent="." unique_id=663310474 instance=ExtResource("1_player")]
+position = Vector2(140, 420)
+
+[node name="Background" type="ColorRect" parent="." unique_id=1893537098]
+z_index = -10
+offset_left = -2000.0
+offset_top = -800.0
+offset_right = 6000.0
+offset_bottom = 800.0
+color = Color(0.121569, 0.141176, 0.223529, 1)
+
+[node name="HealthUI" type="CanvasLayer" parent="." unique_id=814729011]
+
+[node name="Hearts" type="HBoxContainer" parent="HealthUI" unique_id=902134568 groups=["health_label"]]
+offset_left = 16.0
+offset_top = 12.0
+offset_right = 240.0
+offset_bottom = 52.0
+alignment = 0
+
+[node name="H0" type="TextureRect" parent="HealthUI/Hearts" unique_id=100000001]
+custom_minimum_size = Vector2(32, 32)
+texture_filter = 3
+expand_mode = 1
+stretch_mode = 5
+
+[node name="H1" type="TextureRect" parent="HealthUI/Hearts" unique_id=100000002]
+custom_minimum_size = Vector2(32, 32)
+texture_filter = 3
+expand_mode = 1
+stretch_mode = 5
+
+[node name="H2" type="TextureRect" parent="HealthUI/Hearts" unique_id=100000003]
+custom_minimum_size = Vector2(32, 32)
+texture_filter = 3
+expand_mode = 1
+stretch_mode = 5
+
+[node name="H3" type="TextureRect" parent="HealthUI/Hearts" unique_id=100000004]
+custom_minimum_size = Vector2(32, 32)
+texture_filter = 3
+expand_mode = 1
+stretch_mode = 5
+
+[node name="H4" type="TextureRect" parent="HealthUI/Hearts" unique_id=100000005]
+custom_minimum_size = Vector2(32, 32)
+texture_filter = 3
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Ground" type="StaticBody2D" parent="." unique_id=1942664113]
+position = Vector2(2000, 560)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Ground" unique_id=305970750]
+shape = SubResource("1_rect")
+
+[node name="GroundVisual" type="ColorRect" parent="Ground" unique_id=679688049]
+offset_left = -2000.0
+offset_top = -20.0
+offset_right = 2000.0
+offset_bottom = 20.0
+color = Color(0.223529, 0.678431, 0.329412, 1)
+
+[node name="Walls" type="Node2D" parent="." unique_id=1730113352]
+
+[node name="WallLeft" type="StaticBody2D" parent="Walls" unique_id=13362765]
+position = Vector2(1350, 380)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/WallLeft" unique_id=1802862987]
+shape = SubResource("3_wall")
+debug_color = Color(0.6, 0.2, 0.2, 0.42)
+
+[node name="ColorRect" type="ColorRect" parent="Walls/WallLeft" unique_id=130115889]
+offset_left = -12.0
+offset_top = -140.0
+offset_right = 12.0
+offset_bottom = 140.0
+color = Color(0.65098, 0.65098, 0.721569, 1)
+
+[node name="WallRight" type="StaticBody2D" parent="Walls" unique_id=1103847260]
+position = Vector2(1720, 340)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/WallRight" unique_id=1197191619]
+shape = SubResource("3_wall")
+
+[node name="ColorRect" type="ColorRect" parent="Walls/WallRight" unique_id=1265209245]
+offset_left = -12.0
+offset_top = -140.0
+offset_right = 12.0
+offset_bottom = 140.0
+color = Color(0.65098, 0.65098, 0.721569, 1)
+
+[node name="Platforms" type="Node2D" parent="." unique_id=1885187250]
+
+[node name="Plat1" type="StaticBody2D" parent="Platforms" unique_id=1820281090]
+position = Vector2(450, 420)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Platforms/Plat1" unique_id=811304266]
+shape = SubResource("2_small")
+
+[node name="ColorRect" type="ColorRect" parent="Platforms/Plat1" unique_id=167798345]
+offset_left = -110.0
+offset_top = -10.0
+offset_right = 110.0
+offset_bottom = 10.0
+color = Color(0.54902, 0.54902, 0.619608, 1)
+
+[node name="Plat2" type="StaticBody2D" parent="Platforms" unique_id=1550399404]
+position = Vector2(760, 340)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Platforms/Plat2" unique_id=1666283007]
+shape = SubResource("2_small")
+
+[node name="ColorRect" type="ColorRect" parent="Platforms/Plat2" unique_id=2104048961]
+offset_left = -110.0
+offset_top = -10.0
+offset_right = 110.0
+offset_bottom = 10.0
+color = Color(0.54902, 0.54902, 0.619608, 1)
+
+[node name="Plat3" type="StaticBody2D" parent="Platforms" unique_id=932506336]
+position = Vector2(1080, 380)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Platforms/Plat3" unique_id=1654891965]
+shape = SubResource("2_small")
+
+[node name="ColorRect" type="ColorRect" parent="Platforms/Plat3" unique_id=363603384]
+offset_left = -110.0
+offset_top = -10.0
+offset_right = 110.0
+offset_bottom = 10.0
+color = Color(0.54902, 0.54902, 0.619608, 1)
+
+[node name="Plat4" type="StaticBody2D" parent="Platforms" unique_id=2094170492]
+position = Vector2(1450, 280)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Platforms/Plat4" unique_id=1667442994]
+shape = SubResource("2_small")
+
+[node name="ColorRect" type="ColorRect" parent="Platforms/Plat4" unique_id=1606288190]
+offset_left = -110.0
+offset_top = -10.0
+offset_right = 110.0
+offset_bottom = 10.0
+color = Color(0.54902, 0.54902, 0.619608, 1)
+
+[node name="Plat5" type="StaticBody2D" parent="Platforms" unique_id=147785117]
+position = Vector2(1820, 360)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Platforms/Plat5" unique_id=1938598721]
+shape = SubResource("2_small")
+
+[node name="ColorRect" type="ColorRect" parent="Platforms/Plat5" unique_id=521473756]
+offset_left = -110.0
+offset_top = -10.0
+offset_right = 110.0
+offset_bottom = 10.0
+color = Color(0.54902, 0.54902, 0.619608, 1)
+
+[node name="Plat6" type="StaticBody2D" parent="Platforms" unique_id=1335024581]
+position = Vector2(2200, 260)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Platforms/Plat6" unique_id=1656363793]
+shape = SubResource("2_small")
+
+[node name="ColorRect" type="ColorRect" parent="Platforms/Plat6" unique_id=1817560791]
+offset_left = -110.0
+offset_top = -10.0
+offset_right = 110.0
+offset_bottom = 10.0
+color = Color(0.54902, 0.54902, 0.619608, 1)

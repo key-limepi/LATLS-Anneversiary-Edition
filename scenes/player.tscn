@@ -1,0 +1,122 @@
+[gd_scene format=3 uid="uid://b2w8l5a0x6y3c"]
+
+[ext_resource type="Script" path="res://scripts/player.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/characters/lux/betasprites/stand.png" id="2_stand"]
+[ext_resource type="Texture2D" path="res://assets/characters/lux/betasprites/sit.png" id="13_sit"]
+[ext_resource type="Texture2D" path="res://assets/characters/lux/betasprites/run.png" id="3_run"]
+[ext_resource type="Texture2D" path="res://assets/characters/lux/betasprites/run2.png" id="4_run2"]
+[ext_resource type="Texture2D" path="res://assets/characters/lux/betasprites/run3.png" id="5_run3"]
+[ext_resource type="Texture2D" path="res://assets/characters/lux/betasprites/jump.png" id="6_jump"]
+[ext_resource type="Texture2D" path="res://assets/characters/lux/betasprites/jump2.png" id="7_jump2"]
+[ext_resource type="Texture2D" path="res://assets/characters/lux/betasprites/jump3.png" id="8_jump3"]
+[ext_resource type="Texture2D" path="res://assets/characters/lux/betasprites/fall.png" id="9_fall"]
+[ext_resource type="Texture2D" path="res://assets/characters/lux/betasprites/HIT.png" id="10_hit"]
+[ext_resource type="Texture2D" path="res://assets/characters/lux/betasprites/Slide.png" id="11_slide"]
+[ext_resource type="AudioStream" path="res://assets/characters/lux/betasprites/walksound.mp3" id="12_walk"]
+[ext_resource type="AudioStream" path="res://assets/characters/lux/betasprites/jumnp.mp3" id="14_jump"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_lux"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_stand")
+}],
+"loop": true,
+"name": &"idle",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("13_sit")
+}],
+"loop": true,
+"name": &"sit",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("3_run")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_run2")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_run3")
+}],
+"loop": true,
+"name": &"run",
+"speed": 10.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("6_jump")
+}],
+"loop": true,
+"name": &"jump",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("9_fall")
+}],
+"loop": true,
+"name": &"fall",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("10_hit")
+}],
+"loop": true,
+"name": &"hit",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("11_slide")
+}],
+"loop": true,
+"name": &"slide",
+"speed": 5.0
+}]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_col"]
+size = Vector2(28, 52)
+
+[node name="Player" type="CharacterBody2D" groups=["player"]]
+script = ExtResource("1_script")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+position = Vector2(0, -44.0)
+scale = Vector2(0.55, 0.55)
+sprite_frames = SubResource("SpriteFrames_lux")
+animation = &"idle"
+autoplay = "idle"
+texture_filter = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -26)
+shape = SubResource("RectangleShape2D_col")
+debug_color = Color(0, 0.6, 0.705882, 0.42)
+
+[node name="Footsteps" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("12_walk")
+volume_db = -4.0
+pitch_scale = 1.0
+bus = "Master"
+
+[node name="JumpSound" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("14_jump")
+volume_db = -14.0
+pitch_scale = 1.0
+bus = "Master"
+
+[node name="Camera2D" type="Camera2D" parent="."]
+current = true
+zoom = Vector2(1.35, 1.35)
+position_smoothing_enabled = true
+position_smoothing_speed = 10.0
+drag_horizontal_enabled = false
+drag_vertical_enabled = false
+limit_smoothed = false
+process_mode = 3
