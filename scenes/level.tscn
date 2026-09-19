@@ -1,6 +1,9 @@
 [gd_scene format=3 uid="uid://c3yam4b1y702d"]
 
 [ext_resource type="PackedScene" uid="uid://b2w8l5a0x6y3c" path="res://scenes/player.tscn" id="1_player"]
+[ext_resource type="Texture2D" uid="uid://clqs585e6xc7h" path="res://assets/snow.png" id="4_snow"]
+[ext_resource type="Script" path="res://scripts/snow_field.gd" id="5_snowfield"]
+
 [sub_resource type="RectangleShape2D" id="1_rect"]
 size = Vector2(4000, 40)
 
@@ -23,7 +26,15 @@ offset_right = 6000.0
 offset_bottom = 800.0
 color = Color(0.121569, 0.141176, 0.223529, 1)
 
+[node name="Snow" type="CanvasLayer" parent="." unique_id=725014366]
+layer = 1
+
+[node name="SnowField" type="Node2D" parent="Snow" unique_id=725014367]
+script = ExtResource("5_snowfield")
+texture = ExtResource("4_snow")
+
 [node name="HealthUI" type="CanvasLayer" parent="." unique_id=814729011]
+layer = 2
 
 [node name="Hearts" type="HBoxContainer" parent="HealthUI" unique_id=902134568 groups=["health_label"]]
 offset_left = 16.0

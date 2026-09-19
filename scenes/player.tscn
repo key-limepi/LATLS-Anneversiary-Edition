@@ -14,6 +14,7 @@
 [ext_resource type="Texture2D" path="res://assets/characters/lux/betasprites/Slide.png" id="11_slide"]
 [ext_resource type="AudioStream" path="res://assets/characters/lux/betasprites/walksound.mp3" id="12_walk"]
 [ext_resource type="AudioStream" path="res://assets/characters/lux/betasprites/jumnp.mp3" id="14_jump"]
+[ext_resource type="Script" path="res://scripts/player_camera.gd" id="15_camera"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_lux"]
 animations = [{
@@ -113,10 +114,12 @@ bus = "Master"
 
 [node name="Camera2D" type="Camera2D" parent="."]
 current = true
-zoom = Vector2(1.35, 1.35)
-position_smoothing_enabled = true
-position_smoothing_speed = 10.0
-drag_horizontal_enabled = false
-drag_vertical_enabled = false
+zoom = Vector2(1.15, 1.15)
+process_callback = 0
+limit_left = 0
+limit_top = -800
+limit_right = 4000
+limit_bottom = 680
 limit_smoothed = false
+script = ExtResource("15_camera")
 process_mode = 3
