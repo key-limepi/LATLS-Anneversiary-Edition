@@ -29,13 +29,15 @@ var _was_on_floor: bool = false
 @onready var anim: AnimatedSprite2D = $AnimatedSprite2D
 @onready var footsteps: AudioStreamPlayer = $Footsteps
 @onready var jump_sound: AudioStreamPlayer = $JumpSound
+@onready var hitbox: Area2D = $AttackHitbox
 
-var _momentum: PlayerMomentum = PlayerMomentum.new()
-var _movement: PlayerMovement = PlayerMovement.new()
-var _wall: PlayerWall = PlayerWall.new()
-var _anim: PlayerAnim = PlayerAnim.new()
-var _audio: PlayerAudio = PlayerAudio.new()
-var _health: PlayerHealth = PlayerHealth.new()
+var _momentum: LuxMomentum = LuxMomentum.new()
+var _movement: LuxMovement = LuxMovement.new()
+var _wall: LuxWall = LuxWall.new()
+var _anim: LuxAnim = LuxAnim.new()
+var _audio: LuxAudio = LuxAudio.new()
+var _health: LuxHealth = LuxHealth.new()
+var _attack: LuxAttack = LuxAttack.new()
 
 func _ready() -> void:
 	_momentum.setup(streak_rate, streak_max_bonus, streak_decay_rate, streak_top_speed)
@@ -53,8 +55,26 @@ func _ready() -> void:
 	_health.setup(self)
 	_wall.setup(self)
 	_update_health_label()
+	hitbox.monitoring = false
+	hitbox.body_entered.connect(_on_hitbox_hit)
+	hitbox.area_entered.connect(_on_hitbox_hit_area)
 
 func _physics_process(delta: float) -> void:
+	if get_meta("debug_flying", false):
+		var fly_dir: Vector2 = Input.get_vector("move_left", "move_right", "ui_up", "ui_down")
+		if Input.is_action_pressed("jump"):
+			fly_dir.y -= 1.0
+		if Input.is_key_pressed(KEY_S) or Input.is_action_pressed("ui_down"):
+			fly_dir.y += 0.9
+		if fly_dir.length() > 1.0:
+			fly_dir = fly_dir.normalized()
+		var fast: bool = Input.is_key_pressed(KEY_SHIFT)
+		velocity = fly_dir * (360.0 * (2.2 if fast else 1.0))
+		move_and_slide()
+		anim.play("jump" if fly_dir.y < -0.1 else "fall" if fly_dir.y > 0.1 else "idle")
+		anim.flip_h = fly_dir.x < 0 if absf(fly_dir.x) > 0.1 else anim.flip_h
+		return
+
 	var dir: float = Input.get_axis("move_left", "move_right")
 
 	_movement.update_timers(self, delta)
@@ -65,6 +85,9 @@ func _physics_process(delta: float) -> void:
 	else:
 		anim.modulate.a = 1.0
 	if _health.is_dead():
+		if _attack.get_state() == "swoon":
+			anim.play("swoon")
+			return
 		anim.play("hit")
 		await get_tree().create_timer(0.35).timeout
 		get_tree().reload_current_scene()
@@ -77,19 +100,31 @@ func _physics_process(delta: float) -> void:
 	var streak_bonus: float = _momentum.get_bonus()
 	var effective_speed: float = _momentum.effective_speed(speed)
 
-	_movement.handle_horizontal(self, delta, dir, effective_speed)
-	_anim.handle_flip(self, anim, dir, is_wall_sliding, in_hit_stun)
+	_attack.update(self, delta, dir, anim, hitbox)
+	if _attack.is_busy():
+		_movement.handle_gravity(self, delta, is_wall_sliding)
+		if _attack.is_invincible():
+			anim.modulate.a = 0.5
+	else:
+		_movement.handle_horizontal(self, delta, dir, effective_speed)
+		_anim.handle_flip(self, anim, dir, is_wall_sliding, in_hit_stun)
 
-	_movement.handle_gravity(self, delta, is_wall_sliding)
+		_movement.handle_gravity(self, delta, is_wall_sliding)
 
-	if _wall.try_wall_jump(self, _movement, anim, jump_sound):
-		pass
-	elif _movement.try_jump(self, is_wall_sliding, footsteps, jump_sound):
-		pass
-	elif _movement.try_double_jump(self, footsteps, jump_sound):
-		pass
+		var jumped: bool = false
+		if _attack.try_input(self, dir, anim, hitbox):
+			jumped = false
+		elif _wall.try_wall_jump(self, _movement, anim, jump_sound):
+			_anim.squash(anim, 0.85, 1.25, 0.08, 0.12)
+			jumped = true
+		elif _movement.try_jump(self, is_wall_sliding, footsteps, jump_sound):
+			_anim.squash(anim, 0.88, 1.22, 0.08, 0.12)
+			jumped = true
+		elif _movement.try_double_jump(self, footsteps, jump_sound):
+			_anim.squash(anim, 0.92, 1.18, 0.07, 0.1)
+			jumped = true
 
-	_movement.handle_variable_jump(self)
+		_movement.handle_variable_jump(self)
 
 	var pre_vel_y: float = velocity.y
 	var pre_was_on_floor: bool = _was_on_floor
@@ -101,26 +136,13 @@ func _physics_process(delta: float) -> void:
 		_momentum.reset_on_wall()
 
 	var just_landed: bool = not pre_was_on_floor and is_on_floor()
-	if just_landed and pre_vel_y > _health.hurt_threshold:
-		var dmg: float = _health.get_fall_damage(pre_vel_y)
-		if dmg > 0 and _health.can_take_damage():
-			_health.take_damage(dmg)
-			_update_health_label()
-		var stun: float = 0.8 + clamp((pre_vel_y - _health.hurt_threshold) / 750.0, 0.0, 1.0) * 2.4
-		_movement.trigger_hit_for(stun)
+	if just_landed:
 		_momentum.reset()
-		anim.play("hit")
-		if footsteps.playing:
-			footsteps.stop()
-		if _health.is_dead():
-			anim.play("hit")
-			await get_tree().create_timer(0.35).timeout
-			get_tree().reload_current_scene()
-			return
 
 	_was_on_floor = is_on_floor()
 
-	_anim.update(self, anim, dir, is_wall_sliding, _movement._hit_timer, streak_bonus)
+	if not _attack.is_busy():
+		_anim.update(self, anim, dir, is_wall_sliding, _movement._hit_timer, streak_bonus)
 	_audio.update(self, footsteps, dir, effective_speed, streak_bonus, is_wall_sliding, _movement._hit_timer)
 
 	if global_position.y > 2000:
@@ -159,7 +181,20 @@ func heal(amount: float = 1.0) -> void:
 	_update_health_label()
 
 func damage(amount: float = 1.0) -> void:
+	if get_meta("debug_godmode", false) or _attack.is_invincible():
+		return
 	if _health.take_damage(amount):
 		_update_health_label()
 		_movement.trigger_hit()
 		anim.play("hit")
+
+func _on_hitbox_hit(body: Node) -> void:
+	if body == self:
+		return
+	if body.has_method("damage"):
+		body.damage(_attack.hit_damage)
+
+func _on_hitbox_hit_area(area: Area2D) -> void:
+	var p: Node = area.get_parent()
+	if p and p.has_method("damage") and p != self:
+		p.damage(_attack.hit_damage)

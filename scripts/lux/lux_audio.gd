@@ -1,5 +1,5 @@
 extends RefCounted
-class_name PlayerAudio
+class_name LuxAudio
 
 func update(player: CharacterBody2D, footsteps: AudioStreamPlayer, dir: float, effective_speed: float, streak_bonus: float, is_wall_sliding: bool, hit_timer: float) -> void:
 	var in_hit: bool = hit_timer > 0.0

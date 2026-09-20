@@ -1,5 +1,5 @@
 extends RefCounted
-class_name PlayerWall
+class_name LuxWall
 
 var _is_wall_sliding: bool = false
 var wall_slide_max_speed: float = 80.0
@@ -39,7 +39,7 @@ func update_slide(player: CharacterBody2D, delta: float, dir: float, in_hit_stun
 func is_sliding() -> bool:
 	return _is_wall_sliding
 
-func try_wall_jump(player: CharacterBody2D, movement: PlayerMovement, anim: AnimatedSprite2D, jump_sound: AudioStreamPlayer = null) -> bool:
+func try_wall_jump(player: CharacterBody2D, movement: LuxMovement, anim: AnimatedSprite2D, jump_sound: AudioStreamPlayer = null) -> bool:
 	var can_wall_jump: bool = _is_wall_sliding or _wall_coyote > 0.0
 	if can_wall_jump and Input.is_action_just_pressed("jump"):
 		var n: float = _last_wall_n

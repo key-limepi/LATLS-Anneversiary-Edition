@@ -3,6 +3,9 @@
 [ext_resource type="PackedScene" uid="uid://b2w8l5a0x6y3c" path="res://scenes/player.tscn" id="1_player"]
 [ext_resource type="Texture2D" uid="uid://clqs585e6xc7h" path="res://assets/snow.png" id="4_snow"]
 [ext_resource type="Script" path="res://scripts/snow_field.gd" id="5_snowfield"]
+[ext_resource type="Script" path="res://scripts/debug_overlay.gd" id="6_debug"]
+[ext_resource type="Texture2D" uid="uid://swoon_tex" path="res://assets/swoon2.png" id="7_swoon"]
+[ext_resource type="AudioStream" uid="uid://swoon_snd" path="res://spam_swoon.mp3" id="8_swoonsnd"]
 
 [sub_resource type="RectangleShape2D" id="1_rect"]
 size = Vector2(4000, 40)
@@ -194,3 +197,169 @@ offset_top = -10.0
 offset_right = 110.0
 offset_bottom = 10.0
 color = Color(0.54902, 0.54902, 0.619608, 1)
+
+[node name="FallTest" type="Node2D" parent="." unique_id=889900001]
+
+[node name="FT0" type="StaticBody2D" parent="FallTest" unique_id=889900010]
+position = Vector2(2600, 80)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="FallTest/FT0" unique_id=889900011]
+shape = SubResource("2_small")
+
+[node name="ColorRect" type="ColorRect" parent="FallTest/FT0" unique_id=889900012]
+offset_left = -110.0
+offset_top = -10.0
+offset_right = 110.0
+offset_bottom = 10.0
+color = Color(0.9, 0.6, 0.2, 1)
+
+[node name="Label0" type="Label" parent="FallTest/FT0" unique_id=889900013]
+offset_left = -68.0
+offset_top = -38.0
+offset_right = 68.0
+offset_bottom = -12.0
+text = "0.5♥ ~950"
+horizontal_alignment = 1
+
+[node name="FT1" type="StaticBody2D" parent="FallTest" unique_id=889900020]
+position = Vector2(2900, -180)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="FallTest/FT1" unique_id=889900021]
+shape = SubResource("2_small")
+
+[node name="ColorRect" type="ColorRect" parent="FallTest/FT1" unique_id=889900022]
+offset_left = -110.0
+offset_top = -10.0
+offset_right = 110.0
+offset_bottom = 10.0
+color = Color(0.9, 0.55, 0.15, 1)
+
+[node name="Label1" type="Label" parent="FallTest/FT1" unique_id=889900023]
+offset_left = -68.0
+offset_top = -38.0
+offset_right = 68.0
+offset_bottom = -12.0
+text = "1♥ ~1150"
+horizontal_alignment = 1
+
+[node name="FT2" type="StaticBody2D" parent="FallTest" unique_id=889900030]
+position = Vector2(3200, -480)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="FallTest/FT2" unique_id=889900031]
+shape = SubResource("2_small")
+
+[node name="ColorRect" type="ColorRect" parent="FallTest/FT2" unique_id=889900032]
+offset_left = -110.0
+offset_top = -10.0
+offset_right = 110.0
+offset_bottom = 10.0
+color = Color(0.9, 0.45, 0.1, 1)
+
+[node name="Label2" type="Label" parent="FallTest/FT2" unique_id=889900033]
+offset_left = -68.0
+offset_top = -38.0
+offset_right = 68.0
+offset_bottom = -12.0
+text = "2♥ ~1350"
+horizontal_alignment = 1
+
+[node name="FT3" type="StaticBody2D" parent="FallTest" unique_id=889900040]
+position = Vector2(3500, -780)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="FallTest/FT3" unique_id=889900041]
+shape = SubResource("2_small")
+
+[node name="ColorRect" type="ColorRect" parent="FallTest/FT3" unique_id=889900042]
+offset_left = -110.0
+offset_top = -10.0
+offset_right = 110.0
+offset_bottom = 10.0
+color = Color(0.9, 0.35, 0.05, 1)
+
+[node name="Label3" type="Label" parent="FallTest/FT3" unique_id=889900043]
+offset_left = -68.0
+offset_top = -38.0
+offset_right = 68.0
+offset_bottom = -12.0
+text = "3♥ ~1650"
+horizontal_alignment = 1
+
+[node name="FT4" type="StaticBody2D" parent="FallTest" unique_id=889900050]
+position = Vector2(3800, -1180)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="FallTest/FT4" unique_id=889900051]
+shape = SubResource("2_small")
+
+[node name="ColorRect" type="ColorRect" parent="FallTest/FT4" unique_id=889900052]
+offset_left = -110.0
+offset_top = -10.0
+offset_right = 110.0
+offset_bottom = 10.0
+color = Color(0.9, 0.2, 0.0, 1)
+
+[node name="Label4" type="Label" parent="FallTest/FT4" unique_id=889900053]
+offset_left = -68.0
+offset_top = -38.0
+offset_right = 68.0
+offset_bottom = -12.0
+text = "INSTA ~1900"
+horizontal_alignment = 1
+
+[node name="WallTower" type="StaticBody2D" parent="FallTest" unique_id=889900060]
+position = Vector2(3000, -200)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="FallTest/WallTower" unique_id=889900061]
+shape = SubResource("3_wall")
+
+[node name="ColorRect" type="ColorRect" parent="FallTest/WallTower" unique_id=889900062]
+offset_left = -12.0
+offset_top = -650.0
+offset_right = 12.0
+offset_bottom = 650.0
+color = Color(0.65, 0.65, 0.72, 1)
+
+[node name="SwoonScreen" type="CanvasLayer" parent="." unique_id=992000001]
+layer = 11
+visible = false
+groups=["swoon_screen"]
+
+[node name="Bg" type="ColorRect" parent="SwoonScreen" unique_id=992000002]
+offset_left = -16.0
+offset_top = -16.0
+offset_right = 976.0
+offset_bottom = 736.0
+color = Color(0, 0, 0, 1)
+
+[node name="SwoonImage" type="TextureRect" parent="SwoonScreen" unique_id=992000003]
+offset_left = 120.0
+offset_top = 140.0
+offset_right = 840.0
+offset_bottom = 580.0
+texture = ExtResource("7_swoon")
+expand_mode = 1
+stretch_mode = 5
+modulate = Color(1, 1, 1, 1)
+
+[node name="SwoonSound" type="AudioStreamPlayer" parent="SwoonScreen" unique_id=992000004]
+stream = ExtResource("8_swoonsnd")
+volume_db = 0.0
+bus = "Master"
+
+[node name="DebugUI" type="CanvasLayer" parent="." unique_id=991000001]
+script = ExtResource("6_debug")
+layer = 10
+visible = false
+
+[node name="DebugLabel" type="RichTextLabel" parent="DebugUI" unique_id=991000002]
+offset_left = 16.0
+offset_top = 56.0
+offset_right = 520.0
+offset_bottom = 340.0
+text = "DEBUG"
+visible = false
+bbcode_enabled = true
+theme_override_colors/default_color = Color(1, 1, 1, 1)
+theme_override_colors/font_color = Color(0.9, 1, 0.9, 1)
+theme_override_font_sizes/font_size = 13
+fit_content = true
+autowrap_mode = 3

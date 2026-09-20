@@ -1,5 +1,5 @@
 extends RefCounted
-class_name PlayerMomentum
+class_name LuxMomentum
 
 var _move_streak: float = 0.0
 var _streak_bonus: float = 0.0

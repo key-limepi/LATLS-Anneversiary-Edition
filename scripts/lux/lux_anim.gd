@@ -1,5 +1,17 @@
 extends RefCounted
-class_name PlayerAnim
+class_name LuxAnim
+
+var _base_scale: Vector2 = Vector2(0.32, 0.32)
+
+func squash(anim: AnimatedSprite2D, sx: float, sy: float, time1: float = 0.09, time2: float = 0.14) -> void:
+	if not anim:
+		return
+	_base_scale = anim.scale if anim.scale.length() > 0.1 else _base_scale
+	var target: Vector2 = Vector2(_base_scale.x * sx, _base_scale.y * sy)
+	var tw: Tween = anim.get_tree().create_tween() if anim.is_inside_tree() else null
+	if tw:
+		tw.tween_property(anim, "scale", target, time1).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+		tw.tween_property(anim, "scale", _base_scale, time2).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
 
 func update(player: CharacterBody2D, anim: AnimatedSprite2D, dir: float, is_wall_sliding: bool, hit_timer: float, streak_bonus: float) -> void:
 	if hit_timer > 0.0:

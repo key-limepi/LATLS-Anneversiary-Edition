@@ -1,5 +1,5 @@
 extends RefCounted
-class_name PlayerHealth
+class_name LuxHealth
 
 var max_health: int = 5
 var health: float = 5.0
@@ -8,8 +8,9 @@ var _inv_timer: float = 0.0
 
 var hurt_threshold: float = 950.0
 var mid_threshold: float = 1150.0
-var heavy_threshold: float = 1300.0
-var lethal_threshold: float = 1700.0
+var heavy_threshold: float = 1350.0
+var lethal_threshold: float = 1650.0
+var insta_threshold: float = 1900.0
 
 func setup(p: CharacterBody2D) -> void:
 	max_health = p.max_health if "max_health" in p else 3
@@ -43,10 +44,12 @@ func is_invincible() -> bool:
 func get_fall_damage(vel_y: float) -> float:
 	if vel_y < hurt_threshold:
 		return 0.0
+	if vel_y >= insta_threshold:
+		return float(max_health)
 	if vel_y >= lethal_threshold:
-		return 2.0
+		return 3.0
 	if vel_y >= heavy_threshold:
-		return 1.5
+		return 2.0
 	if vel_y >= mid_threshold:
 		return 1.0
 	return 0.5

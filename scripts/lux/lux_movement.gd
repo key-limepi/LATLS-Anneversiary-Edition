@@ -1,5 +1,5 @@
 extends RefCounted
-class_name PlayerMovement
+class_name LuxMovement
 
 var _coyote_timer: float = 0.0
 var _jump_buffer_timer: float = 0.0
