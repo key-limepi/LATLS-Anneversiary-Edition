@@ -1,4 +1,5 @@
 extends CharacterBody2D
+class_name Lux
 
 @export var speed: float = 240.0
 @export var jump_velocity: float = -460.0
@@ -26,6 +27,16 @@ extends CharacterBody2D
 
 var _was_on_floor: bool = false
 
+# online stuff, peer_id stays 0 when playing offline
+var peer_id: int = 0
+var is_puppet: bool = false # true for fighters that belong to other players
+var player_name: String = ""
+var hit_mask: int = 1 # physics layer our attacks look for
+var _ko: bool = false
+var _ko_sent: bool = false
+var _send_timer: float = 0.0
+var _puppet: LuxPuppet = LuxPuppet.new()
+
 @onready var anim: AnimatedSprite2D = $AnimatedSprite2D
 @onready var footsteps: AudioStreamPlayer = $Footsteps
 @onready var jump_sound: AudioStreamPlayer = $JumpSound
@@ -40,6 +51,17 @@ var _health: LuxHealth = LuxHealth.new()
 var _attack: LuxAttack = LuxAttack.new()
 
 func _ready() -> void:
+	_configure_components()
+	if is_online():
+		_setup_online_body()
+	if is_puppet:
+		return
+	_update_health_label()
+	hitbox.monitoring = false
+	hitbox.body_entered.connect(_on_hitbox_hit)
+	hitbox.area_entered.connect(_on_hitbox_hit_area)
+
+func _configure_components() -> void:
 	_momentum.setup(streak_rate, streak_max_bonus, streak_decay_rate, streak_top_speed)
 	_movement.coyote_time = coyote_time
 	_movement.jump_buffer_time = jump_buffer_time
@@ -54,12 +76,14 @@ func _ready() -> void:
 	_movement.max_air_jumps = max_air_jumps
 	_health.setup(self)
 	_wall.setup(self)
-	_update_health_label()
-	hitbox.monitoring = false
-	hitbox.body_entered.connect(_on_hitbox_hit)
-	hitbox.area_entered.connect(_on_hitbox_hit_area)
 
 func _physics_process(delta: float) -> void:
+	if is_puppet:
+		_puppet.update(self, anim)
+		return
+	if _ko:
+		return
+
 	if get_meta("debug_flying", false):
 		var fly_dir: Vector2 = Input.get_vector("move_left", "move_right", "ui_up", "ui_down")
 		if Input.is_action_pressed("jump"):
@@ -85,6 +109,15 @@ func _physics_process(delta: float) -> void:
 	else:
 		anim.modulate.a = 1.0
 	if _health.is_dead():
+		if is_online():
+			# server decides about ko and respawn, we just wait
+			# swoon is the only way we can die on our own, so we have to tell the server
+			var swooning: bool = _attack.get_state() == "swoon"
+			if swooning and not _ko_sent:
+				_ko_sent = true
+				Net.report_self_ko()
+			anim.play("swoon" if swooning else "hit")
+			return
 		if _attack.get_state() == "swoon":
 			anim.play("swoon")
 			return
@@ -145,6 +178,13 @@ func _physics_process(delta: float) -> void:
 		_anim.update(self, anim, dir, is_wall_sliding, _movement._hit_timer, streak_bonus)
 	_audio.update(self, footsteps, dir, effective_speed, streak_bonus, is_wall_sliding, _movement._hit_timer)
 
+	if is_online():
+		_send_timer += delta
+		if _send_timer >= 1.0 / Net.SEND_RATE - 0.001:
+			_send_timer = 0.0
+			Net.send_state(make_state())
+		return
+
 	if global_position.y > 2000:
 		_health.take_damage(_health.max_health)
 		get_tree().reload_current_scene()
@@ -189,12 +229,136 @@ func damage(amount: float = 1.0) -> void:
 		anim.play("hit")
 
 func _on_hitbox_hit(body: Node) -> void:
-	if body == self:
-		return
-	if body.has_method("damage"):
-		body.damage(_attack.hit_damage)
+	deal_hit(body, _attack.hit_damage)
 
 func _on_hitbox_hit_area(area: Area2D) -> void:
-	var p: Node = area.get_parent()
-	if p and p.has_method("damage") and p != self:
-		p.damage(_attack.hit_damage)
+	deal_hit(area.get_parent(), _attack.hit_damage)
+
+# ---- online
+
+func is_online() -> bool:
+	return peer_id != 0
+
+# call this right after instantiating and before add_child
+func setup_online(id: int, display_name: String, is_local: bool) -> void:
+	peer_id = id
+	player_name = display_name
+	is_puppet = not is_local
+	name = "Fighter%d" % id
+	if is_puppet:
+		# a remote fighter must never grab our camera
+		var cam: Node = get_node("Camera2D")
+		remove_child(cam)
+		cam.free()
+
+func _setup_online_body() -> void:
+	if is_puppet:
+		# puppets get moved by snapshots, they only need to be findable by attacks
+		collision_layer = 2
+		collision_mask = 0
+		remove_from_group("player")
+		add_to_group("remote_player")
+	else:
+		# fighters walk through each other, the attacker does the hit checking
+		collision_layer = 0
+		collision_mask = 1
+		hit_mask = 2
+		hitbox.collision_mask = hit_mask
+
+	var tag: Label = Label.new()
+	tag.text = player_name
+	tag.size = Vector2(200, 20)
+	tag.position = Vector2(-100, -128)
+	tag.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	tag.add_theme_font_size_override("font_size", 14)
+	tag.add_theme_constant_override("outline_size", 4)
+	tag.add_theme_color_override("font_outline_color", Color(0, 0, 0, 1))
+	if not is_puppet:
+		tag.add_theme_color_override("font_color", Color(1.0, 0.9, 0.5))
+	add_child(tag)
+
+func make_state() -> FighterState:
+	var s: FighterState = FighterState.new()
+	s.pos = global_position
+	s.vel = velocity
+	s.anim = String(anim.animation)
+	s.flip = anim.flip_h
+	s.anim_speed = anim.speed_scale
+	s.rot = anim.rotation
+	s.tint = anim.modulate
+	s.gray = anim.material != null
+	s.dodging = _attack.is_invincible()
+	return s
+
+func push_state(state: FighterState) -> void:
+	_puppet.push(state)
+
+# our attacks call this when they touch something
+func deal_hit(target: Node, amount: float) -> void:
+	if target == null or target == self:
+		return
+	if is_online():
+		# only other fighters count, and the server decides what really happens
+		if target is Lux and target.is_puppet:
+			Net.report_hit(target.peer_id, amount, -1.0 if anim.flip_h else 1.0)
+	elif target.has_method("damage"):
+		target.damage(amount)
+
+# server says somebody got hit
+func net_hit(new_health: float, knockback: Vector2) -> void:
+	_health.health = new_health
+	if is_puppet:
+		return
+	_health._inv_timer = _health.invincible_time
+	_attack.interrupt(anim, hitbox) # otherwise the attack code would overwrite the knockback
+	_movement.trigger_hit()
+	velocity = knockback
+	anim.play("hit")
+	_update_health_label()
+
+func net_ko() -> void:
+	_health.health = 0.0
+	visible = false
+	if is_puppet:
+		_puppet.clear()
+		return
+	_ko = true
+	velocity = Vector2.ZERO
+	footsteps.stop()
+	hitbox.monitoring = false
+	_update_health_label()
+
+func net_respawn(pos: Vector2, new_health: float, inv_time: float) -> void:
+	global_position = pos
+	reset_physics_interpolation()
+	visible = true
+	if is_puppet:
+		_puppet.clear()
+		_health.health = new_health
+		return
+	# start from a clean slate
+	_respawn_components()
+	_health.health = new_health
+	_health._inv_timer = inv_time
+	_ko = false
+	_ko_sent = false
+	_was_on_floor = false
+	velocity = Vector2.ZERO
+	hitbox.monitoring = false
+	hitbox.visible = false
+	anim.rotation = 0.0
+	anim.modulate = Color(1, 1, 1, 1)
+	anim.material = null
+	anim.play("idle")
+	var cam: Node = get_node_or_null("Camera2D")
+	if cam and cam.has_method("snap_to_target"):
+		cam.snap_to_target()
+	_update_health_label()
+
+func _respawn_components() -> void:
+	_momentum = LuxMomentum.new()
+	_movement = LuxMovement.new()
+	_wall = LuxWall.new()
+	_attack = LuxAttack.new()
+	_health = LuxHealth.new()
+	_configure_components()

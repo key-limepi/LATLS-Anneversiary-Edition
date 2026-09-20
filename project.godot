@@ -11,9 +11,13 @@ config_version=5
 [application]
 
 config/name="Lux And The Lightshard Anniversary Edition"
-run/main_scene="res://scenes/level.tscn"
+run/main_scene="res://scenes/online_menu.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
 config/icon="res://icon.svg"
+
+[autoload]
+
+Net="*res://scripts/net/net.gd"
 
 [display]
 

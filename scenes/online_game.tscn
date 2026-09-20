@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/net/online_game.gd" id="1_game"]
+
+[node name="OnlineGame" type="Node2D"]
+script = ExtResource("1_game")

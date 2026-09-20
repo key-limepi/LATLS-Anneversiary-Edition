@@ -298,7 +298,7 @@ func _spawn_blast(player: CharacterBody2D) -> void:
 	blast.monitoring = true
 	blast.monitorable = false
 	blast.collision_layer = 0
-	blast.collision_mask = 1
+	blast.collision_mask = player.hit_mask if "hit_mask" in player else 1
 	blast.z_index = 10
 	player.get_parent().add_child(blast)
 	var vis: Sprite2D = Sprite2D.new()
@@ -317,11 +317,32 @@ func _spawn_blast(player: CharacterBody2D) -> void:
 	tw2.parallel().tween_property(shape.shape, "radius", 110, 0.38)
 	tw2.parallel().tween_property(vis, "modulate:a", 0.0, 0.42)
 	tw2.parallel().tween_property(inner, "modulate:a", 0.0, 0.38)
-	blast.body_entered.connect(func(b: Node): if b != player and b.has_method("damage"): b.damage(hit_damage))
-	blast.area_entered.connect(func(a: Area2D): var p = a.get_parent(); if p and p != player and p.has_method("damage"): p.damage(hit_damage))
+	blast.body_entered.connect(func(b: Node): _hit_target(player, b))
+	blast.area_entered.connect(func(a: Area2D): _hit_target(player, a.get_parent()))
 	var tw3: Tween = blast.get_tree().create_tween()
 	tw3.tween_interval(0.45)
 	tw3.tween_callback(blast.queue_free)
+
+func _hit_target(player: CharacterBody2D, target: Node) -> void:
+	if target == null or target == player:
+		return
+	if player.has_method("deal_hit"):
+		player.deal_hit(target, hit_damage)
+	elif target.has_method("damage"):
+		target.damage(hit_damage)
+
+# cancels whatever move we are doing, used when we get hit online
+func interrupt(anim: AnimatedSprite2D, hitbox: Area2D) -> void:
+	if _state == "none" or _state == "swoon":
+		return
+	_state = "none"
+	_timer = 0.0
+	_afterimage_tick = 0.0
+	hitbox.monitoring = false
+	hitbox.visible = false
+	anim.rotation = 0.0
+	anim.modulate = Color(1, 1, 1, 1)
+	_set_grayscale(anim, false)
 
 func _trigger_swoon(player: CharacterBody2D, anim: AnimatedSprite2D, hitbox: Area2D) -> void:
 	_state = "swoon"
